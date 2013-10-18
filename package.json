@@ -1,0 +1,39 @@
+{
+  "name": "express-imageprinter",
+  "description": "Image scaling middle ware for ExpressJS",
+  "version": "0.0.1",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "ssh://fogit@intra1/git/express-imageprinter"
+  },
+  "author": {
+    "name": "Kari Heikkinen",
+    "email": "kari.heikkinen@firstout.fi"
+  },
+  "main": "./index.js",
+  "scripts": {
+    "test-server": "NODE_ENV=test node tests/server.js"
+  },
+  "directories": {
+    "lib": "lib",
+    "tests": "tests"
+  },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.2.x"
+  },
+  "dependencies": {
+    "express": "~3.4.0",
+    "gm": "~1.13.1",
+    "underscore": "~1.5.2",
+    "async": "~0.2.9",
+    "mkdirp": "~0.3.5"
+  },
+  "devDependencies": {
+    "express": "~3.4.0",
+    "supertest": "latest",
+    "should": "latest",
+    "mocha": "latest"
+  }
+}
