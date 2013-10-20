@@ -16,10 +16,18 @@ app.use( '/ip', ip.middleware( {
     } )
 );
 
+ip.set( 'test', function( img, options ) {
+    // Only seen when image is processed, not when served from cache
+    console.log( 'called test operation' );
+    img.resize( options.width, options.height);
+} )
+
 var imageScaler = ip.createHelper( '/ip' );
 app.get( '/', function( req, res ) {
     var link = imageScaler( 'image.jpg', { width: 400, height: 200, crop:true } );
-    res.send( 200, '<img src="'+link+'">Test image</img>' );
+    var link2 = imageScaler( 'image.jpg', { width: 200, height: 200, op: 'test' } );
+
+    res.send( 200, '<img src="'+link+'">Test image</img><br /><img src="'+link2+'"></img>' );
 });
 
 app.listen(port);
