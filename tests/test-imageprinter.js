@@ -18,8 +18,6 @@ describe('Image printer', function() {
         uri.should.include( 'ip' );
 
         var resizeConfig = ip.parseRequest( uri );
-//        console.log( uri );
-//        console.log(resizeConfig);
 
         resizeConfig.should.be.instanceof( Object );
         resizeConfig.should.have.property( 'options' );
@@ -113,7 +111,6 @@ describe('Image printer', function() {
         var req = { path: link };
         var res = { }
         middleware( req, res, function(err ) {
-            console.log( err );
             exists = fs.existsSync( filepath  );
             exists.should.be.equal( true );
 
