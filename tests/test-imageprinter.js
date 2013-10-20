@@ -3,6 +3,8 @@
 var should = require('should');
 var assert = require('mocha');
 var path = require( 'path' );
+var fs = require( 'fs' );
+var gm = require( 'gm' );
 
 describe('Image printer', function() {
     var ip = require('../index');
@@ -87,4 +89,40 @@ describe('Image printer', function() {
         });
     });
 
+    it('should generate resized image', function( done ) {
+        var helper = ip.createHelper('');
+        var link = helper('image.jpg', {
+            width: 200,
+            height: 200
+        });
+
+        var config = {
+            source: path.join( __dirname, '/images' ),
+            destination: '/tmp/express-imageprinter-test'
+        };
+
+        var middleware = ip.middleware( config );
+
+        // Check that file does not exist
+        var filepath =  path.join(config.destination, link );
+
+        var exists = fs.existsSync( filepath );
+        if( exists )
+            fs.unlinkSync( filepath );
+
+        var req = { path: link };
+        var res = { }
+        middleware( req, res, function(err ) {
+            console.log( err );
+            exists = fs.existsSync( filepath  );
+            exists.should.be.equal( true );
+
+            gm( filepath).size( function(err, result) {
+                result.width.should.be.equal( 200 );
+                result.height.should.be.equal( 200 );
+                fs.unlinkSync( filepath );
+                done();
+            })
+        });
+    });
 });
