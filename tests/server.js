@@ -16,10 +16,11 @@ app.use( '/ip', ip.middleware( {
     } )
 );
 
-ip.set( 'test', function( img, options ) {
+ip.set( 'test', function( img, options, next ) {
     // Only seen when image is processed, not when served from cache
     console.log( 'called test operation' );
     img.resize( options.width, options.height);
+    next( null, img );
 } )
 
 var imageScaler = ip.createHelper( '/ip' );

@@ -9,6 +9,25 @@ var gm = require( 'gm' );
 describe('Image printer', function() {
     var ip = require('../index');
 
+    //ip.debug( true );
+
+    it('browser helper should create same uri', function() {
+        var browserHelper = require('../imageprinter-helper' );
+
+        var helper = ip.createHelper( '/ip' );
+        var helper2 = browserHelper( '/ip' );
+
+        var image = 'large/image.jpg';
+        var options = { width: '200', height: '100', quality: '100', crop: 'true' };
+
+        var uri = helper( image, options );
+        var uri2 = helper2( image, options );
+
+        uri.should.include( 'ip' );
+        uri.should.equal( uri2 );
+
+    });
+
     it('helper should encode parameters to uri', function() {
         var helper = ip.createHelper( '/ip' );
         var image = 'large/image.jpg';
@@ -34,10 +53,8 @@ describe('Image printer', function() {
            options: {}
         }
 
-//        ip.debug( true );
-        ip.validateCache( options, function( err, cached ) {
-            should.not.exists( err );
-            cached.should.equal( false );
+        ip.validateCache( options.cacheFile, null, function( valid, modified ) {
+            valid.should.equal( false );
             done();
         });
     });
@@ -49,26 +66,31 @@ describe('Image printer', function() {
             options: {}
         }
 
-        // ip.debug( true );
-        ip.validateCache( options, function( err, cached ) {
-            should.not.exists( err );
-            cached.should.equal( true );
+        ip.validateCache( options.cacheFile, null, function( valid, modified ) {
+            valid.should.not.equal( false );
             done();
         });
     });
 
 
     it('should give error if source not exists', function(done) {
-        var options = {
-            cacheFile: path.join(__dirname, 'images', 'image_exists.jpg'),
-            source: path.join(__dirname, 'images', 'not_exists.jpg'),
-            options: {}
-        }
+        var helper = ip.createHelper('');
+        var link = helper( 'image_not_exist.jpg' );
 
-        //ip.debug( true );
-        ip.validateCache( options, function( err, cached ) {
-            should.exists( err );
-            done();
+        var config = {
+            source: path.join( __dirname, '/images' ),
+            destination: '/tmp/express-imageprinter-test'
+        };
+        var middleware = ip.middleware( config );
+        var req = { path: link };
+        var res = {
+            send: function( code, message ) {
+                code.should.be.equal( 404 );
+                done();
+            }
+        };
+        middleware( req, res, function( err ) {
+            assert( false, 'should not be here');
         });
     });
 
@@ -79,10 +101,8 @@ describe('Image printer', function() {
             options: {}
         }
 
-        //ip.debug( true );
-        ip.validateCache( options, function( err, cached ) {
-            should.not.exists( err );
-            cached.should.equal( false );
+        ip.validateCache(  options.cacheFile, null, function( valid, modified ) {
+            valid.should.equal( false );
             done();
         });
     });
@@ -102,15 +122,15 @@ describe('Image printer', function() {
         var middleware = ip.middleware( config );
 
         // Check that file does not exist
-        var filepath =  path.join(config.destination, link );
+        var filepath =  path.join( config.destination, link );
 
         var exists = fs.existsSync( filepath );
         if( exists )
             fs.unlinkSync( filepath );
 
         var req = { path: link };
-        var res = { }
-        middleware( req, res, function(err ) {
+        var res = { send: function() {} };
+        middleware( req, res, function( err ) {
             exists = fs.existsSync( filepath  );
             exists.should.be.equal( true );
 
@@ -120,6 +140,58 @@ describe('Image printer', function() {
                 fs.unlinkSync( filepath );
                 done();
             })
+        });
+    });
+
+
+    it('should work with custom source/validator', function(done) {
+        var helper = ip.createHelper('');
+        var link = helper( 'image' );
+        var config = {
+            destination: '/tmp/express-imageprinter-test',
+            source: function( name, next ) {
+                next( null, path.join( __dirname,  'images', name + '.jpg' ) );
+            },
+            validate: function( name, next ) {
+                next( true, null );
+            }
+        };
+
+        var middleware = ip.middleware( config );
+
+        var filepath =  path.join( config.destination, link );
+        var req = { path: link };
+        var res = { send: function( code, msg ) {
+            code.should.equal( 200, msg );
+        } };
+        middleware( req, res, function( err ) {
+            var exists = fs.existsSync( filepath  );
+            exists.should.be.equal( true );
+            done();
+        });
+    });
+
+    it('should work with custom source without validator', function(done) {
+        var helper = ip.createHelper('');
+        var link = helper( 'image' );
+        var config = {
+            destination: '/tmp/express-imageprinter-test',
+            source: function( name, next ) {
+                next( null, path.join( __dirname,  'images', name + '.jpg' ) );
+            }
+        };
+
+        var middleware = ip.middleware( config );
+
+        var filepath =  path.join( config.destination, link );
+        var req = { path: link };
+        var res = { send: function( code, msg ) {
+            code.should.equal( 200, msg );
+        } };
+        middleware( req, res, function( err ) {
+            var exists = fs.existsSync( filepath  );
+            exists.should.be.equal( true );
+            done();
         });
     });
 });
