@@ -29,7 +29,7 @@ function imageprinterCreateHelper ( prefix, options ) {
         var imgOpts = options || {};
         for( var key in _options ) {
             if( ! imgOpts.hasOwnProperty( key ) ) {
-                imgOpts[key] = options[key];
+                imgOpts[key] = _options[key];
             }
         }
 
