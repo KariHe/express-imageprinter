@@ -23,6 +23,9 @@ function imageprinterCreateHelper ( prefix, options ) {
     }
 
     return function helper( filepath, options ) {
+        filepath = new String( filepath );
+
+        // combine user options with configured default options
         var imgOpts = options || {};
         for( var key in _options ) {
             if( ! imgOpts.hasOwnProperty( key ) ) {
@@ -30,20 +33,29 @@ function imageprinterCreateHelper ( prefix, options ) {
             }
         }
 
+        // Separate directory path from file path
         var idxPath = filepath.lastIndexOf( separator.path );
         var dirPath = idxPath !== -1 ? filepath.slice( 0, idxPath ) : '';
 
-        var file = filepath.slice( dirPath.length + 1 );
+        // Separate file name from filepath
+        var file = filepath.slice( idxPath + 1  );
         var idxFile = file.lastIndexOf( '.');
+
+        // and file extension from file name
         var fileExt = idxFile !== -1 ? file.slice( idxFile ) : '';
 
+        // Get file base name
         var base = fileExt.length ? file.slice( 0, idxFile ) : file;
 
+        // Define new file name with image processing options
         var resizeFileName = base + separator.opts + serializeOptions(imgOpts) + fileExt;
+
+        // Push all URI parts to list
         var parts = [];
         if( _prefix.length ) parts.push( _prefix );
         if( dirPath.length ) parts.push( dirPath );
         parts.push( resizeFileName );
+        // .. and join them as URI
         return parts.join( separator.path );
     };
 
@@ -54,11 +66,6 @@ function imageprinterCreateHelper ( prefix, options ) {
             var value  = typeof options[key] === 'object' ? '' : options[key];
             params.push( key + separator.value + value );
         }
-        console.log( params );
         return params.join( separator.param );
     }
 };
-
-if( module ) {
-    module.exports = imageprinterCreateHelper;
-}

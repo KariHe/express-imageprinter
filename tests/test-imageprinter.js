@@ -12,7 +12,8 @@ describe('Image printer', function() {
     //ip.debug( true );
 
     it('browser helper should create same uri', function() {
-        var browserHelper = require('../imageprinter-helper' );
+        eval( fs.readFileSync( path.join( __dirname, '..', 'imageprinter-helper.js'), 'utf8' ) );
+        var browserHelper = imageprinterCreateHelper;
 
         var helper = ip.createHelper( '/ip' );
         var helper2 = browserHelper( '/ip' );
